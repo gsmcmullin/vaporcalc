@@ -69,13 +69,16 @@ def do_keypress(entry, event):
 		return True
 		
 	if (keyname == "d") and (event.state & gtk.gdk.CONTROL_MASK):
-		gtk.main_quit()
+		#w.hide()
+		w.iconify()
+		#gtk.main_quit()
 
 	keyop = {
 		"plus": '+', "KP_Add": '+',
 		"minus": '-', "KP_Subtract": '-',
 		"asterisk": '*', "KP_Multiply": '*',
 		"slash": '/', "KP_Divide": '/',
+		"asciicircum": ' ^',
 		"space": ' ',
 		}
 	if keyop.has_key(keyname):
@@ -88,9 +91,17 @@ def do_keypress(entry, event):
 
 if __name__ == "__main__":
 	w = gtk.Window()
+	w.connect("delete-event", lambda w, e: w.iconify() or True)
 	w.connect("destroy", gtk.main_quit)
 	w.set_default_size(200, 100)
-	w.set_title("EngCalc")
+	w.set_title("VaporCalc")
+	w.set_decorated(False)
+	w.set_border_width(1)
+	w.set_keep_above(1)
+	#w.set_skip_taskbar_hint(True)
+	w.set_skip_pager_hint(True)
+	w.set_opacity(0.9)
+	w.set_resizable(False)
 
 	vbox = gtk.VBox()
 	w.add(vbox)

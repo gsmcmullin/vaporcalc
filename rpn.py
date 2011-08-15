@@ -16,6 +16,7 @@ class Op(object):
 		Op.ops[key] = self
 
 # Stack operations
+Op('EXIT', 0, lambda: exit())
 Op('DROP', 1, lambda a: None)
 Op('DUP', 1, lambda a: (a, a))
 Op('EXCH', 2, lambda a, b: (b, a))
@@ -103,8 +104,8 @@ def t_OP(t):
 	# Call operation
 	try:
 		result = f.function(*arg)
-	except:
-		print "Error in operation"
+	except Exception as e:
+		print "Error in operation:", e
 		stack.extend(arg)
 		return
 

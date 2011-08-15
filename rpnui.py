@@ -29,6 +29,12 @@ def eng_formatter(f, sigfigs=4):
 		0: '', 
 		3: 'k', 6: 'M', 9: 'G', 12: 'T'}
 
+	if f < 0:
+		sign = '-'
+		f = -f
+	else:
+		sign = ''
+
 	exp = 0
 	if f != 0:
 		while f < 1:
@@ -38,9 +44,9 @@ def eng_formatter(f, sigfigs=4):
 			exp += 3
 			f /= 1000
 
-	s = ''
-	p = int(math.log10(f)) + 1
+	p = int(math.log10(f) if f > 0 else 0) + 1
 	ff = f * (10 ** (sigfigs - p))
+	s = ''
 	for i in range(sigfigs):
 		s = str(int(ff) % 10) + s
 		ff /= 10
@@ -48,7 +54,7 @@ def eng_formatter(f, sigfigs=4):
 		if p == sigfigs:
 			s = '.' + s
 
-	return s + mult.get(exp, "e%02d" % exp)
+	return sign + s + mult.get(exp, "e%02d" % exp)
 
 def do_keypress(entry, event):
 	keyname = gtk.gdk.keyval_name(event.keyval) 
@@ -62,14 +68,14 @@ def do_keypress(entry, event):
 		entry.set_text('')
 		return True
 		
-	print keyname
+	if (keyname == "d") and (event.state & gtk.gdk.CONTROL_MASK):
+		gtk.main_quit()
 
 	keyop = {
 		"plus": '+', "KP_Add": '+',
 		"minus": '-', "KP_Subtract": '-',
 		"asterisk": '*', "KP_Multiply": '*',
 		"slash": '/', "KP_Divide": '/',
-		"asciicircum": '^',
 		"space": ' ',
 		}
 	if keyop.has_key(keyname):

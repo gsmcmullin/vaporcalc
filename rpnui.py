@@ -45,7 +45,7 @@ def eng_formatter(f, sigfigs=4):
 			f /= 1000
 
 	p = int(math.log10(f) if f > 0 else 0) + 1
-	ff = f * (10 ** (sigfigs - p))
+	ff = round(f * (10 ** (sigfigs - p)))
 	s = ''
 	for i in range(sigfigs):
 		s = str(int(ff) % 10) + s
@@ -89,6 +89,11 @@ def do_keypress(entry, event):
 	
 	return False
 
+move = False
+
+def button_press(ww, e):
+	w.window.begin_move_drag(int(e.button), int(e.x_root), int(e.y_root), int(e.time))
+
 if __name__ == "__main__":
 	w = gtk.Window()
 	w.connect("delete-event", lambda w, e: w.iconify() or True)
@@ -110,6 +115,7 @@ if __name__ == "__main__":
 	for i in range(4):
 		sm.append(('   ', None))
 	sv = gtk.TreeView(sm)
+	sv.connect("button-press-event", button_press)
 	sv.set_headers_visible(False)
 	sv.set_rules_hint(True)
 	sv.append_column(gtk.TreeViewColumn(None, gtk.CellRendererText(), text=0))

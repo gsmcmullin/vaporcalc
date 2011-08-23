@@ -1,0 +1,29 @@
+VaporCalc is an experiment which will become an Engineering RPN 
+calculator application.  It is named after the abacus screen in Space
+Quest III.
+
+This file just contains some random notes...
+
+Goals:
+ - RPN (Postfix) notation
+ - Accept input in Engineering/SPICE notation:
+   4700, 4.7e3, 3.7k and 4k7 are all the same number.
+ - Display numbers in Engineering notation.
+ - Extendable in Python or RPN.
+ - Access all functions easily with the keyboard.
+ - No user interface clutter that doesn't add value.
+
+It is currently usable, but there is no documentation at all.
+It is written entirely in Python and makes use of PyGTK and Ply.
+The RPN interpreter may be used separately from the UI and should be kept
+this way.  
+The RPN interpreter is currently just a token scanner, but should be 
+replaced with a parser for future features of complex numbers and
+PRN programming.
+
+Todo:
+ - Programmable key-binding for user funcitons.
+ - Rewrite everything as I decide how I want it to work.
+ - Selectable formatter for ENG, SCI, FIX, STD.
+ - Selectable angle formatter for DEG, RAD, GRAD.
+

@@ -125,18 +125,34 @@ def t_error(t):
 
 lexer = lex.lex()
 
+def formatter(x):
+	if type(x) is float:
+		return _formatter(x)
+	else:
+		return repr(x)
+
+def set_formatter(f):
+	global _formatter
+	_formatter = f
+	
+_formatter = repr
+
 def dostr(s):
 	lexer.input(s)
 	for tok in lexer:
 		pass
 
+def stack_to_str(stack):
+		return "[" + ", ".join(map(formatter, stack)) + "]"
+	
 if __name__ == "__main__":
 	while True:
+		print "> ",
 		line = sys.stdin.readline()
 		if not line: break
 
 		lexer.input(line)
 		for tok in lexer:
 			print tok
-		print "STACK = %r" % stack
+		print stack_to_str(stack)
 

@@ -2,7 +2,7 @@ import gtk
 import gtk.gdk
 import glib
 import rpn
-import math
+import formatters
 
 def do_update():
 	# Update tree view from RPN stack
@@ -11,54 +11,13 @@ def do_update():
 	for i in range(4 - len(stacktop)):
 		sm.append(('', ''))
 	for i in range(len(stacktop)):
-		if type(stacktop[i]) is float:
-			sm.append((len(stacktop) - i, eng_formatter(stacktop[i])))
-		else:
-			sm.append((len(stacktop) - i, repr(stacktop[i])))
-
-def eng_formatter(f, sigfigs=4):
-	# Format floats in engineering notation
-	mult = {-15: 'f', -12: 'p', -9: 'n', -6: u'\u03bc', -3: 'm', 
-		0: '', 
-		3: 'k', 6: 'M', 9: 'G', 12: 'T'}
-
-	if f < 0:
-		sign = '-'
-		f = -f
-	else:
-		sign = ''
-
-	exp = 0
-	if f != 0:
-		while f < 1:
-			exp -= 3
-			f *= 1000
-		while f >= 1000:
-			exp += 3
-			f /= 1000
-
-	p = int(math.log10(f) if f > 0 else 0) + 1
-	ff = round(f * (10 ** (sigfigs - p)))
-	s = ''
-	for i in range(sigfigs):
-		s = str(int(ff) % 10) + s
-		ff /= 10
-		p += 1
-		if p == sigfigs:
-			s = '.' + s
-
-	return sign + s + mult.get(exp, "e%02d" % exp)
+		#if type(stacktop[i]) is float:
+			sm.append((len(stacktop) - i, rpn.formatter(stacktop[i])))
+		#else:
+		#	sm.append((len(stacktop) - i, repr(stacktop[i])))
 
 def do_keypress(entry, event):
 	keyname = gtk.gdk.keyval_name(event.keyval) 
-#	if not entry.get_text():
-#		entry.set_property("editing-canceled", True)
-#		entry.editing_done()
-#		entry.remove_widget()
-#		return True
-
-#	if keyname == "Escape":
-#		return False
 		
 	if (keyname == "d") and (event.state & gtk.gdk.CONTROL_MASK):
 		entry.stop_editing(True)
@@ -120,7 +79,6 @@ def key_press(ww, e):
 	# Modifier keys to ignore.
 	mods = ["Control_L", "Control_R", 
 		"Shift_L", "Shift_R", 
-		"Escape", 
 		"Alt_L", "Alt_R",
 		"Meta_L", "Meta_R",
 		"Up", "Down", "Left", "Right",
@@ -130,6 +88,11 @@ def key_press(ww, e):
 
 	if (keyname == "BackSpace") or (keyname == "Delete"):
 		rpn.dostr("drop")
+		do_update()
+		return True
+
+	if (keyname == "Escape"):
+		rpn.dostr("clear")
 		do_update()
 		return True
 
@@ -174,10 +137,7 @@ if __name__ == "__main__":
 	w.add(vbox)
 
 	sm = gtk.ListStore(str, str)
-	for i in range(4):
-		it = sm.append(('   ', None))
 	sv = gtk.TreeView(sm)
-	sv.set_cursor(sm.get_string_from_iter(it))
 	sv.set_size_request(150, -1)
 	sv.connect("button-press-event", button_press)
 	sv.connect("key-press-event", key_press)
@@ -193,8 +153,7 @@ if __name__ == "__main__":
 	vbox.pack_start(sv, True, True)
 
 	w.show_all()
-	#sv.grab_focus()
-	sv.get_selection().unselect_all()
-
+	do_update()
+	
 	gtk.main()
 

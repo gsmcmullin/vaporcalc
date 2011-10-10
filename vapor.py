@@ -3,13 +3,14 @@ import gtk.gdk
 import glib
 import rpn
 import formatters
+import kb
 
 def do_update():
 	# Update tree view from RPN stack
 	sm.clear()
 	stacktop = rpn.stack[-4:]
 	for i in range(4 - len(stacktop)):
-		sm.append(('', ''))
+		sm.append(('   ', ''))
 	for i in range(len(stacktop)):
 		#if type(stacktop[i]) is float:
 			sm.append((len(stacktop) - i, rpn.formatter(stacktop[i])))
@@ -86,6 +87,15 @@ def key_press(ww, e):
 	if keyname in mods:
 		return True
 
+	if keyname == "Caps_Lock":
+		global w
+		kbwin = w.get_data("kbwin")
+		if kbwin.get_visible():
+			kbwin.hide()
+		else:
+			kbwin.show_all()
+		return True
+
 	if (keyname == "BackSpace") or (keyname == "Delete"):
 		rpn.dostr("drop")
 		do_update()
@@ -151,6 +161,8 @@ if __name__ == "__main__":
 	sv.append_column(gtk.TreeViewColumn(None, cel, text=1))
 	sv.set_can_focus(True)
 	vbox.pack_start(sv, True, True)
+
+	w.set_data("kbwin", kb.KeyboardWindow())
 
 	w.show_all()
 	do_update()

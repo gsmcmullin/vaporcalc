@@ -25,6 +25,19 @@ def clearstack():
 	global stack
 	stack = []
 Op('CLEAR', 0, clearstack)
+# Programming operations
+def rpneval(s):
+	l = lexer.clone()
+	l.input(str(s))
+	for tok in l:
+		pass
+Op('EVAL', 1, rpneval)
+def rpndef(code, name):
+	Op(name.upper(), 0, lambda : rpneval(code))
+Op('DEF', 2, rpndef)
+def rpnundef(s):
+	del Op.ops[s.upper()]
+Op('UNDEF', 1, rpnundef)
 # Arithmetic
 Op('+', 2, lambda a, b: a + b)
 Op('-', 2, lambda a, b: a - b)
@@ -47,7 +60,7 @@ Op('^', 2, math.pow)
 Op('SQRT', 1, math.sqrt)
 Op('SQR', 1, lambda a: a * a)
 
-tokens = ('SPICENUM', 'NUMBER', 'OP')
+tokens = ('SPICENUM', 'NUMBER', 'STRING', 'OP')
 
 t_ignore = '\t \n\r'
 
@@ -56,9 +69,9 @@ def t_SPICENUM(t):
 	r'[-+]?((\d+[TtGgMKkmUuNnPpFf]\d*)|((\d+(\.\d*)?|\.\d+)[TtGgMKkmUuNnPpFf]))'
 	mult = {'T':1e12, 't':1e12,
 		'G':1e9, 'g':1e9,
-		'M':1e6, 
-		'K':1e3, 'k':1e3, 
-		'm':1e-3, 
+		'M':1e6,
+		'K':1e3, 'k':1e3,
+		'm':1e-3,
 		'U':1e-6, 'u': 1e-6,
 		'N':1e-9, 'n': 1e-9,
 		'P':1e-12, 'p': 1e-12,
@@ -80,6 +93,11 @@ def t_SPICENUM(t):
 def t_NUMBER(t):
 	r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 	stack.append(float(t.value))
+
+# Scan a string
+def t_STRING(t):
+	r"'[^']+'"
+	stack.append(t.value[1:-1])
 
 # Scan a operator.
 def t_OP(t):
@@ -134,7 +152,7 @@ def formatter(x):
 def set_formatter(f):
 	global _formatter
 	_formatter = f
-	
+
 _formatter = repr
 
 def dostr(s):
@@ -144,7 +162,7 @@ def dostr(s):
 
 def stack_to_str(stack):
 		return "[" + ", ".join(map(formatter, stack)) + "]"
-	
+
 if __name__ == "__main__":
 	while True:
 		print "> ",

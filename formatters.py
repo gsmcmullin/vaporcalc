@@ -4,7 +4,7 @@ import math
 def eng_formatter(f, sigfigs=4, spice=True):
 	# Format floats in engineering notation
 	mult = {-15: 'f', -12: 'p', -9: 'n', -6: u'\u03bc', -3: 'm', 
-		0: '', 
+		0: '',
 		3: 'k', 6: 'M', 9: 'G', 12: 'T'}
 	if not spice:
 			mult = {}
@@ -38,6 +38,6 @@ def eng_formatter(f, sigfigs=4, spice=True):
 	return sign + s + mult.get(exp, "e%02d" % exp)
 
 rpn.Op('STD', 0, lambda : rpn.set_formatter(repr))
-rpn.Op('FIX', 1, lambda figs: rpn.set_formatter(lambda x: ("%%.%df" % figs) % x))
-rpn.Op('ENG', 1, lambda figs: rpn.set_formatter(lambda x: eng_formatter(x, figs, False)))
-rpn.Op('SPICE', 1, lambda figs: rpn.set_formatter(lambda x: eng_formatter(x, figs, True)))
+rpn.Op('FIX', 1, lambda figs: rpn.set_formatter(lambda x: ("%%.%df" % int(figs)) % x))
+rpn.Op('ENG', 1, lambda figs: rpn.set_formatter(lambda x: eng_formatter(x, int(figs), False)))
+rpn.Op('SPICE', 1, lambda figs: rpn.set_formatter(lambda x: eng_formatter(x, int(figs), True)))

@@ -1,9 +1,29 @@
+# This file is part of the VaporCalc project.
+#
+# Copyright (C) 2012  Gareth McMullin <gareth@blacksphere.co.nz>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import gtk
 import gtk.gdk
 import glib
 import rpn
 import formatters
 import kb
+import os
+import os.path
+import sys
 
 def do_update():
 	# Update tree view from RPN stack
@@ -18,8 +38,8 @@ def do_update():
 		#	sm.append((len(stacktop) - i, repr(stacktop[i])))
 
 def do_keypress(entry, event):
-	keyname = gtk.gdk.keyval_name(event.keyval) 
-		
+	keyname = gtk.gdk.keyval_name(event.keyval)
+
 	if (keyname == "d") and (event.state & gtk.gdk.CONTROL_MASK):
 		entry.stop_editing(True)
 		#w.hide()
@@ -41,7 +61,7 @@ def do_keypress(entry, event):
 		entry.editing_done()
 		entry.remove_widget()
 		return True
-	
+
 	return False
 
 def button_press(ww, e):
@@ -61,6 +81,16 @@ def editing_started(cel, editable, path):
 	editable.connect("editing-done", editing_done)
 	editable.connect("key-press-event", do_keypress)
 	editable.connect("changed", do_changed)
+	op_model = gtk.ListStore(str)
+	opnames = rpn.Op.ops.keys()
+	opnames.sort()
+	for k in opnames:
+		op_model[op_model.append()] = (k,)
+	op_compl = gtk.EntryCompletion()
+	op_compl.set_model(op_model)
+	op_compl.set_text_column(0)
+	op_compl.set_popup_completion(True)
+	editable.set_completion(op_compl)
 	editing = True
 
 def editing_done(editable):
@@ -75,11 +105,10 @@ def editing_done(editable):
 def key_press(ww, e):
 	if editing: return
 
-	keyname = gtk.gdk.keyval_name(e.keyval) 
-	print keyname
+	keyname = gtk.gdk.keyval_name(e.keyval)
 	# Modifier keys to ignore.
-	mods = ["Control_L", "Control_R", 
-		"Shift_L", "Shift_R", 
+	mods = ["Control_L", "Control_R",
+		"Shift_L", "Shift_R",
 		"Alt_L", "Alt_R",
 		"Meta_L", "Meta_R",
 		"Up", "Down", "Left", "Right",
@@ -87,7 +116,7 @@ def key_press(ww, e):
 	if keyname in mods:
 		return True
 
-	if keyname == "Caps_Lock":
+	if (keyname == "Caps_Lock") or (keyname == "VoidSymbol"):
 		global w
 		kbwin = w.get_data("kbwin")
 		if kbwin.get_visible():
@@ -124,7 +153,21 @@ def key_press(ww, e):
 	gtk.main_do_event(e.copy())
 	return True
 
+def load_modules():
+	moddir = os.path.expanduser("~/.vaprocalc")
+	if not os.path.exists(moddir):
+		os.mkdir(moddir)
+	sys.path.append(moddir)
+	mods = os.listdir(moddir)
+	for mod in mods:
+		if mod.endswith(".py"):
+			__import__(mod[:-3])
+	for mod in mods:
+		if mod.endswith(".rpn"):
+			rpn.dostr(open(os.path.join(moddir,mod)).read())
+
 if __name__ == "__main__":
+	load_modules()
 	w = gtk.Window()
 	w.connect("delete-event", lambda w, e: w.iconify() or True)
 	w.connect("destroy", gtk.main_quit)
@@ -166,6 +209,6 @@ if __name__ == "__main__":
 
 	w.show_all()
 	do_update()
-	
+
 	gtk.main()
 

@@ -46,6 +46,17 @@ def do_keypress(entry, event):
 		w.iconify()
 		return True
 
+	text = entry.get_text()
+	if text and text[0] == "'":
+		if keyname == "apostrophe":
+			entry.set_text(text+"'")
+			entry.set_property("editing-canceled", False)
+			entry.editing_done()
+			entry.remove_widget()
+			return True
+		else:
+			return False
+
 	keyop = {
 		"plus": '+', "KP_Add": '+',
 		"minus": '-', "KP_Subtract": '-',

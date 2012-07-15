@@ -17,6 +17,7 @@
 
 import gtk
 import gtk.gdk
+import pango
 import glib
 import rpn
 import formatters
@@ -24,6 +25,17 @@ import kb
 import os
 import os.path
 import sys
+
+def do_str(s):
+	global w
+	status = w.get_data("status")
+	try:
+		rpn.dostr(s)
+	except Exception as e:
+		status.set_text(str(e))
+		print e
+	else:
+		status.set_text("")
 
 def do_update():
 	# Update tree view from RPN stack
@@ -108,7 +120,7 @@ def editing_done(editable):
 	global editing
 	if not editable.get_property("editing-canceled"):
 		s = editable.get_text()
-		rpn.dostr(s)
+		do_str(s)
 	do_update()
 	sv.get_selection().unselect_all()
 	editing = False
@@ -137,17 +149,17 @@ def key_press(ww, e):
 		return True
 
 	if (keyname == "BackSpace") or (keyname == "Delete"):
-		rpn.dostr("drop")
+		do_str("drop")
 		do_update()
 		return True
 
 	if (keyname == "Escape"):
-		rpn.dostr("clear")
+		do_str("clear")
 		do_update()
 		return True
 
 	if (keyname == "Return") or (keyname == "KP_Enter"):
-		rpn.dostr("dup")
+		do_str("dup")
 		do_update()
 		return True
 
@@ -175,14 +187,12 @@ def load_modules():
 			__import__(mod[:-3])
 	for mod in mods:
 		if mod.endswith(".rpn"):
-			rpn.dostr(open(os.path.join(moddir,mod)).read())
+			do_str(open(os.path.join(moddir,mod)).read())
 
 if __name__ == "__main__":
-	load_modules()
 	w = gtk.Window()
 	w.connect("delete-event", lambda w, e: w.iconify() or True)
 	w.connect("destroy", gtk.main_quit)
-	w.set_default_size(200, 100)
 	w.set_title("VaporCalc")
 	w.set_icon_from_file("vapor-small.png")
 	w.set_decorated(False)
@@ -200,9 +210,23 @@ if __name__ == "__main__":
 	vbox = gtk.VBox()
 	w.add(vbox)
 
+	hbox = gtk.HBox()
+	vbox.pack_start(hbox, True, True)
+	label = gtk.Label()
+	w.set_data("status", label)
+	label.set_alignment(0, 0.5);
+	label.set_ellipsize(pango.ELLIPSIZE_END)
+	label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("red"))
+	hbox.pack_start(label, True, True)
+	label = gtk.Label("DEG")
+	w.set_data("anglemode", label)
+	label.set_alignment(1, 0.5);
+	label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+	hbox.pack_end(label, False, False)
+
 	sm = gtk.ListStore(str, str)
 	sv = gtk.TreeView(sm)
-	sv.set_size_request(150, -1)
+	sv.set_size_request(170, -1)
 	sv.connect("button-press-event", button_press)
 	sv.connect("key-press-event", key_press)
 	sv.set_headers_visible(False)
@@ -212,13 +236,18 @@ if __name__ == "__main__":
 	cel.set_alignment(1, 0.5)
 	cel.set_property("editable", True)
 	cel.connect("editing-started", editing_started)
-	sv.append_column(gtk.TreeViewColumn(None, cel, text=1))
+	col = gtk.TreeViewColumn(None, cel, text=1)
+	col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+	sv.append_column(col)
 	sv.set_can_focus(True)
 	vbox.pack_start(sv, True, True)
 
 	w.set_data("kbwin", kb.KeyboardWindow())
 
 	w.show_all()
+
+	load_modules()
+
 	do_update()
 
 	gtk.main()

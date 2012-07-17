@@ -33,21 +33,24 @@ def do_str(s):
 		rpn.dostr(s)
 	except Exception as e:
 		status.set_text(str(e))
+		status.set_tooltip_text(str(e))
 		print e
 	else:
 		status.set_text("")
+		status.set_tooltip_text(None)
 
 def do_update():
+	# Update angle mode display
+	global w
+	anglemode = w.get_data("anglemode")
+	anglemode.set_text(rpn.anglemode)
 	# Update tree view from RPN stack
 	sm.clear()
 	stacktop = rpn.stack[-4:]
 	for i in range(4 - len(stacktop)):
 		sm.append(('   ', ''))
 	for i in range(len(stacktop)):
-		#if type(stacktop[i]) is float:
-			sm.append((len(stacktop) - i, rpn.formatter(stacktop[i])))
-		#else:
-		#	sm.append((len(stacktop) - i, repr(stacktop[i])))
+		sm.append((len(stacktop) - i, rpn.formatter(stacktop[i])))
 
 def do_keypress(entry, event):
 	keyname = gtk.gdk.keyval_name(event.keyval)

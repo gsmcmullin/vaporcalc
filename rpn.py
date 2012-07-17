@@ -21,6 +21,23 @@ import math
 
 lastarg = []
 stack = []
+anglemode = 'DEG'
+
+angleconv = {
+	'RAD': 1,
+	'DEG': math.pi/180,
+	'GRAD': math.pi/200,
+}
+
+def setangle(mode):
+	global anglemode
+	anglemode = mode
+
+def angle2rad(a):
+	return a * angleconv[anglemode];
+
+def rad2angle(a):
+	return a / angleconv[anglemode];
 
 class Op(object):
 	__slots__ = ('key', 'args', 'function');
@@ -64,12 +81,15 @@ Op('NEG', 1, lambda a: -a)
 Op('INV', 1, lambda a: 1/a)
 # Trigonometric
 Op('PI', 0, lambda : math.pi)
-Op('SIN', 1, math.sin)
-Op('COS', 1, math.cos)
-Op('TAN', 1, math.tan)
-Op('ASIN', 1, math.asin)
-Op('ACOS', 1, math.acos)
-Op('ATAN', 1, math.atan)
+Op('DEG', 0, lambda : setangle('DEG'))
+Op('RAD', 0, lambda : setangle('RAD'))
+Op('GRAD', 0, lambda : setangle('GRAD'))
+Op('SIN', 1, lambda x: math.sin(angle2rad(x)))
+Op('COS', 1, lambda x: math.cos(angle2rad(x)))
+Op('TAN', 1, lambda x: math.tan(angle2rad(x)))
+Op('ASIN', 1, lambda x: rad2angle(math.asin(x)))
+Op('ACOS', 1, lambda x: rad2angle(math.acos(x)))
+Op('ATAN', 1, lambda x: rad2angle(math.atan(x)))
 # Exponential and Logarithm
 Op('LN', 1, math.log)
 Op('EXP', 1, math.exp)
@@ -183,12 +203,13 @@ def stack_to_str(stack):
 
 if __name__ == "__main__":
 	while True:
-		print "> ",
+		print ("%s> " % anglemode),
 		line = sys.stdin.readline()
 		if not line: break
 
-		lexer.input(line)
-		for tok in lexer:
-			print tok
+		try:
+			dostr(line)
+		except Exception as e:
+			print e
 		print stack_to_str(stack)
 
